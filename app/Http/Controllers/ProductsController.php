@@ -20,9 +20,6 @@ class ProductsController extends Controller
     public function index()
     {
 
-
-
-
         $products = Cache::Remember('allProducts',300,fn()
 
         => Products::latest()->take(9)->get());
