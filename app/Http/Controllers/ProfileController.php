@@ -12,11 +12,15 @@ use Illuminate\View\View;
 use App\Http\Requests\ChangeAvatarRequest;
 
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use App\Traits\ImageUpload;
 
 
 
 class ProfileController extends Controller
 {
+    use ImageUpload;
     /**
      * Display the user's profile form.
      */
@@ -71,27 +75,23 @@ class ProfileController extends Controller
 
 
 
-    public function changeAvatar(ChangeAvatarRequest $request) : RedirectResponse
+
+
+    public function changeAvatar(ChangeAvatarRequest $request): RedirectResponse
     {
         $user = auth()->user();
 
-
-            //delete old avatar if exists
-            $avatar = Auth::user()->avatar;
         if ($user->avatar) {
-            Storage::disk('public')->delete('images/avatars/' . $user->avatar);
-        }
+           Storage::disk('public')->delete('images/avatars/' . $user->avatar);
+         }
+            //Trait
+        $name = $this->uploadImage($request->file('avatar'), 'images/avatars');
 
 
+        // Update user record
+        $user->update(['avatar' => $name]);
 
 
-            $path = $request->file('avatar')->store('images/avatars', 'public');
-            $filename = basename($path);
-
-
-        $user->update(['avatar' => $filename]);
-
-                return redirect()->route('profile.edit')->with('status', 'Avatar updated successfully!');
+        return redirect()->route('profile.edit')->with('status', 'Avatar updated successfully!');
     }
-
 }
